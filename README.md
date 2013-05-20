@@ -1,9 +1,7 @@
 ubuntu-statsd-graphite-setup
 ============================
 
-* Ubuntu 12.04
- * Name: 099720109477/ubuntu/images/ebs/ubuntu-precise-12.04-i386-server-20120822
- * AMI ID: ami-057bcf6c
+* Ubuntu 12.04 LTS
 * Graphite 0.9.10
  * https://launchpad.net/graphite/0.9/0.9.10
 * Statsd
@@ -11,23 +9,37 @@ ubuntu-statsd-graphite-setup
 
 1. Adapted from: http://kaivanov.blogspot.com/2012/02/how-to-install-and-use-graphite.html
 
-```sh
+Update everything :)
+
+```shell
 apt-get update
 apt-get upgrade
+```
+Pull down the code to a place you can hack away at it.
+
+```shell
+mkdir ~/src/ && cd ~/src/
 wget http://launchpad.net/graphite/0.9/0.9.10/+download/graphite-web-0.9.10.tar.gz
 wget http://launchpad.net/graphite/0.9/0.9.10/+download/carbon-0.9.10.tar.gz
 wget http://launchpad.net/graphite/0.9/0.9.10/+download/whisper-0.9.10.tar.gz
 tar -zxvf graphite-web-0.9.10.tar.gz
 tar -zxvf carbon-0.9.10.tar.gz
 tar -zxvf whisper-0.9.10.tar.gz
+chown -R $USER.$USER ~/src/
 mv graphite-web-0.9.10 graphite
 mv carbon-0.9.10 carbon
 mv whisper-0.9.10 whisper
 rm carbon-0.9.10.tar.gz
 rm graphite-web-0.9.10.tar.gz
 rm whisper-0.9.10.tar.gz
+```
+Install a bunch of dependant packages
+```shell
 apt-get install --assume-yes apache2 apache2-mpm-worker apache2-utils apache2.2-bin apache2.2-common libapr1 libaprutil1 libaprutil1-dbd-sqlite3 libapache2-mod-wsgi libaprutil1-ldap memcached python-cairo python-cairo-dev python-django python-ldap python-memcache python-pysqlite2 sqlite3 erlang-os-mon erlang-snmp rabbitmq-server bzr expect ssh libapache2-mod-python python-setuptools
 apt-get install build-essential python-dev
+```
+Do the python `easy_install`s
+```shell
 easy_install zope.interface
 easy_install twisted
 easy_install txamqp
@@ -109,7 +121,7 @@ WSGISocketPrefix /etc/httpd/wsgi/
         # must change @DJANGO_ROOT@ to be the path to your django
         # installation, which is probably something like:
         # /usr/lib/python2.6/site-packages/django
-        Alias /media/ "@DJANGO_ROOT@/contrib/admin/media/"
+        Alias /media/ "/usr/lib/python2.7/dist-packages/django/contrib/admin/media/"
         <Location "/media/">
                 SetHandler None
         </Location>
@@ -122,6 +134,15 @@ WSGISocketPrefix /etc/httpd/wsgi/
         </Directory>
 </VirtualHost>
 ```
+Restart lets get going!
+
+```shell
+cd /opt/graphite/webapp/graphite/
+python manage.py syncdb
+mkdir -p /etc/httpd/wsgi/
+chown -R www-data.www-data /opt/graphite/
+service apache2 restart
+```
 
 2. Adapted from: http://www.kinvey.com/blog/item/158-how-to-set-up-metric-collection-using-graphite-and-statsd-on-ubuntu-1204-lts
 
@@ -129,7 +150,7 @@ WSGISocketPrefix /etc/httpd/wsgi/
 sudo apt-get install python-software-properties
 sudo apt-add-repository ppa:chris-lea/node.js
 sudo apt-get update
-sudo apt-get install nodejs npm
+sudo apt-get install nodejs 
 sudo apt-get install git
 
 cd /opt && sudo git clone git://github.com/etsy/statsd.git
