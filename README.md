@@ -139,6 +139,10 @@ Restart lets get going!
 ```shell
 cd /opt/graphite/webapp/graphite/
 python manage.py syncdb
+cd /opt/graphite/bin/
+cp /opt/graphite/conf/carbon.conf.example /opt/graphite/conf/carbon.conf
+cp /opt/graphite/conf/storage-schemas.conf.example /opt/graphite/conf/storage-schemas.conf
+./carbon-cache.py start
 mkdir -p /etc/httpd/wsgi/
 chown -R www-data.www-data /opt/graphite/
 service apache2 restart
